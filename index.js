@@ -1,66 +1,45 @@
-const { BlobServiceClient } = require("@azure/storage-blob");
-const { DefaultAzureCredential } = require('@azure/identity');
-const { v1: uuidv1 } = require("uuid");
-require("dotenv").config();
+import AzureHandler from './azureHandler.js';
+import formHandler from './formHandler.js';
+import express from 'express';
+import path from 'path';
+import bodyParser from 'body-parser';
 
-const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME;
-    if (!accountName) throw Error('Azure Storage accountName not found');
+const app = express()
+const port = 3001
+const __dirname = path.resolve();
 
-    const blobServiceClient = BlobServiceClient.fromConnectionString(
-      process.env.AZURE_STORAGE_CONNECTION_STRING
-    );
+let Applist = {};
+app.use(bodyParser.urlencoded({extended: false}));
 
-async function main() {
-  try {
-    console.log("Azure Blob storage v12 - Applist");
-    
-  let clientContainer = blobServiceClient.getContainerClient(process.env.CONTAINER)
-  //listBlobs(clientContainer)
- // .catch((ex) => console.log(ex.message));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, './index.html'));
+   new Promise((resolve, reject) => {
+    resolve(loadAppList());
+   }).then((data) => console.log(data));
+})
 
-  downloadBlob(clientContainer, process.env.BLOBNAME)
-  .catch((ex) => console.log(ex.message));
+// inital load of applist data
+async function loadAppList(){
+  new Promise((resolve, reject) => {
+    resolve(AzureHandler());
+   }).then((data) => Applist=data)
+   return "Loaded Applist";
+}
 
-  } catch (err) {
-    console.err(`Error: ${err.message}`);
+// on submission of form
+app.post('/submit-form', (req, res) => {
+  const formData = req.body;
+  if (formData.status == "Option"){
+    console.log("no good");
   }
-}
 
-main()
-  .then(() => console.log("Done"))
-  .catch((ex) => console.log(ex.message));
-
-async function listBlobs(clientContainer){
-
-  console.log('\nListing blobs...');
-
-// List the blob(s) in the container.
-for await (const blob of clientContainer.listBlobsFlat()) {
-  // Get Blob Client from name, to get the URL
-  const tempBlockBlobClient = clientContainer.getBlockBlobClient(blob.name);
-
-  // Display blob name and URL
-  console.log(
-    `\n\tname: ${blob.name}\n\tURL: ${tempBlockBlobClient.url}\n`
-  );
-}
-}
-
-async function downloadBlob(clientContainer, blobName){
-  const downloadBlockBlobResponse = await clientContainer.getBlockBlobClient(blobName).download(0);
-  console.log('\nDownloaded blob content...');
-console.log(
-  '\t',
-  await streamToText(downloadBlockBlobResponse.readableStreamBody)
-);
-}
-
-// Convert stream to text
-async function streamToText(readable) {
-  readable.setEncoding('utf8');
-  let data = '';
-  for await (const chunk of readable) {
-    data += chunk;
+  if (formData.VASPReport == "Default"){
+    console.log("no good");
   }
-  return data;
-}
+  //Applist.push(formHandler(formData));
+  console.log(formHandler(formData));
+})
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})

@@ -1,0 +1,5 @@
+TODO:
+    load JSON app list data from Azure blob storage ✔️
+    implement form for input but with express ✔️
+    push inputted properties onto JSON applist data object
+    overwrite current JSON applist.json

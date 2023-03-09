@@ -1,0 +1,139 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>AMDSB Application Approvals</title>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="AMDSB Applications Approval Database"/>
+<style type="text/css">
+ul.nav li a, ul.nav li a:visited {
+    color: #1C4A71 !important;
+}
+ul.nav li a:hover, ul.nav li a:active {
+    color: #1C4A71 !important;
+}
+ul.nav li.active a {
+    color: #1C4A71 !important;
+}
+p {
+    font-family: "Open Sans", Helvetica, sans-serif;
+    font-size: 15px;
+    line-height: 1.4;
+}
+.footer-font {
+    color: #FFF;
+    font-family: "Open Sans", Helvetica, sans-serif;
+    text-decoration:none;
+    line-height:17px;
+}
+.footer_titles {
+    color: #CCC;
+    font-family: "Open Sans", Helvetica, sans-serif;
+    font-size:12px;
+}
+    .nav { margin-bottom: 0;
+    margin-top: 0;
+    }
+.skip {
+        position: absolute;
+        top: -1000px;
+        left: -1000px;
+        height: 1px;
+        width: 1px;
+        text-align: left;
+        overflow: hidden;
+    }
+    a.skip:active,
+    a.skip:focus,
+    a.skip:hover {
+        left: 0;
+        top: 0;
+        width: auto;
+        height: auto;
+        overflow: visible;
+    }
+.table {
+color: #333; /* Lighten up font color */
+font-family: Helvetica, Arial, sans-serif; /* Nicer font */
+border-collapse:
+collapse; border-spacing: 0;
+}
+img { border: 0; }
+</style>
+ <style type="text/css">
+#dhtmltooltip{
+position: absolute;
+width: 150px;
+border: 2px solid #426ea0;
+padding: 2px;
+background-color: white;
+visibility: hidden;
+z-index: 100;
+font-size:12px;
+/*Remove below line to remove shadow. Below line should always appear last within this CSS*/
+filter: progid:DXImageTransform.Microsoft.Shadow(color=gray,direction=135);
+}
+img { border: 0; }
+
+.form-control, .custom-select, .btn{
+     margin: 5px; 
+}
+.btn {
+        width: 100%;
+}
+</style>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css">
+<script type="text/javascript" class="init">
+</script>
+</head>
+<body>
+        <a href="#content" class="skip">Skip to content</a>
+        <div class="container-fluid">
+                
+         <div class="row d-block">
+            <div class=".col-100 justify-content-end" style="background-color:#ccffff">
+                    <div class="row">
+                          <div class="col-sm-10"><h1 align="left" class="p-3 text-black">AMDSB Application Approvals</h1></div>
+                          <div class="col-sm-10"><h1 align="left" class="p-3 text-black">ADMIN: Entering Apps</h1></div>
+                          </form></div>
+                  </div>
+          </div>
+  <div class="container">
+  <form id="addApp" method="POST" action="/submit-form">
+        <div class="form-row">
+                <div class="col">
+                        <!--Application name-->
+                        <input id="appName" name="appName" class="form-control" type="text" placeholder="Application Name">
+                        <!-- Link to Application-->
+                        <input name="appLink" id="appLink" class="form-control" type="text" placeholder="Application Link">
+                        <!--Status -->
+                        <select name="status" class="custom-select my-1 mr-sm-2" id="status">
+                                <option value="Option">Option</option>
+                                <option value="Green">Green</option>
+                                <option value="Yellow">Yellow</option>
+                                <option value="Red">Red</option>
+                        </select>
+                </div>
+                <div class="col">
+                        <!--Description and Cost-->
+                        <input name="desc" id="desc" class="form-control" type="text" placeholder="Description and Cost">
+                        <!--VASP Educator Report-->
+                        <select name="VASPReport" class="custom-select my-1 mr-sm-2" id="VASPReport">
+                                <option value="Default">VASP Educator Report</option>
+                                <option value="Report">Report</option>
+                                <option value="NOSPIC">No Student Personal Information Collected</option>
+                        </select>
+                        <!-- VASP Educator Report link-->
+                        <input name="VASPLink" id="VASPLink" class="form-control" type="text" placeholder="VASP Report Link">
+                </div>
+        </div>
+        
+                <button type="submit" class="btn btn-primary">Send Off!</button>
+</form>
+<pre id="put-json">
+
+</pre>
+</div>
