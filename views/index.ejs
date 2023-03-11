@@ -79,26 +79,36 @@ img { border: 0; }
 .form-control, .custom-select, .btn{
      margin: 5px; 
 }
-.btn {
+.btn-wide {
         width: 100%;
 }
+
+.delete-btn {
+    position: absolute;
+    top: 12px;
+    right: 20px;
+    width: 50px;
+  }
+
 </style>
 <script src="https://code.jquery.com/jquery-3.6.4.min.js" integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css">
-<script type="text/javascript" class="init">
-</script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 </head>
+
 <body>
         <a href="#content" class="skip">Skip to content</a>
         <div class="container-fluid">
                 
          <div class="row d-block">
-            <div class=".col-100 justify-content-end" style="background-color:#ccffff">
+            <div id="top-wrapper" class=".col-100 justify-content-end" style="background-color:#ccffff">
+                <button type="submit" class="to-the-moon btn btn-wide btn-primary">Send to the Moon!</button>
                     <div class="row">
                           <div class="col-sm-10"><h1 align="left" class="p-3 text-black">AMDSB Application Approvals</h1></div>
                           <div class="col-sm-10"><h1 align="left" class="p-3 text-black">ADMIN: Entering Apps</h1></div>
-                          </form></div>
+                    </div>
                   </div>
           </div>
   <div class="container">
@@ -131,10 +141,73 @@ img { border: 0; }
                 </div>
         </div>
         
-                <button type="submit" class="btn btn-primary">Send Off!</button>
+                <button type="submit" class="btn btn-wide btn-primary">Send To Temporary Applist</button>
 </form>
-<pre id="put-json">
-    <%- applist %>
-</pre>
+</div>
+
+<div class="container">
+<div id="accordion">
+<%# decending, newest shows at the top %>
+<% try { %>
+<% for(var i=applist.length-1; i > 0; i--){ %>
+   
+<div class="card">
+    <button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapse<%= i %>" aria-expanded="false" aria-controls="collapse<%= i %>">
+    <div class="card-header" id="heading<%= i %>">
+      <h5 class="mb-0">
+        <%- applist[i].Application %>
+      </h5>
+    </div>
+</button>
+    <div id="collapse<%= i %>" class="collapse" aria-labelledby="heading<%= i %>" data-parent="#accordion">
+        
+        <div class="card-body">
+            <div style="margin-left: 5%;">
+          <h5 style="display:inline">Status: </h5><span style="color:green"><%- applist[i].Status %></span>
+          <br>
+          <h5 style="display:inline">Description and Cost: </h5><%- applist[i]["Description and Cost"] %>
+          <br>
+          <h5 style="display:inline">Report: </h5><%- applist[i]["VASP Educator Report"] %>
+        </div>
+        <button type="button" data-id="<%= i %>" class="delete-btn btn btn-secondary">X</button>
+        </div>
+      </div>
+        
+      </div>
+      <% } %>
+      <% } catch(error){ %>
+        <% console.error(error); %>
+      <% } %>
+    </div>
+</div>
+
+<script>
+    $('#accordion').on('click', '.delete-btn', function() {
+        console.log("button clicked");
+        var buttonId = $(this).data('id');
+        $.ajax({
+          url: '/delete-app',
+          type: 'POST',
+          data: { id: buttonId },
+          success: function(data) {
+            window.location.href = '/post-action?deleteSuccess';
+            toastr.success(`Button Id: ${buttonId} was deleted`)
+          }
+        });
+      });
+      $('#top-wrapper').on('click', '.to-the-moon', function() {
+        var buttonId = $(this).data('id');
+        $.ajax({
+          url: '/update-azure',
+          type: 'POST',
+          data: { id: buttonId },
+          success: function(data) {
+            window.location.href = '/post-action?uploadSuccess';
+            toastr.success("Upload Successful")
+          }
+        });
+      });
+      
+</script>
 </body>
 </html>

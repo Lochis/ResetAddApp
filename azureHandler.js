@@ -14,17 +14,49 @@ const blobServiceClient = BlobServiceClient.fromConnectionString(
 
 let clientContainer = blobServiceClient.getContainerClient(process.env.CONTAINER)
 
-export default async function init() {
+export const init = () => {
   try {
     console.log("Azure Blob storage v12 - Applist");
-
- return await downloadBlob(clientContainer, process.env.BLOBNAME)
-  .catch((ex) => console.log(ex.message));
+    return downloadBlob(clientContainer, process.env.BLOBNAME)
+    .catch((ex) => console.log(ex.message));
 
   } catch (err) {
     console.err(`Error: ${err.message}`);
   }
 }
+
+async function downloadBlob(){
+  const downloadBlockBlobResponse = await clientContainer.getBlockBlobClient(process.env.BLOBNAME).download(0);
+  console.log('\nDownloaded blob content...');
+  return await streamToText(downloadBlockBlobResponse.readableStreamBody);
+}
+
+export const uploadBlob = async (Applist) => {
+  try {
+  const blockBlobClient = clientContainer.getBlockBlobClient(process.env.BLOBNAME);
+  const contentLength = Buffer.byteLength(JSON.stringify(Applist, undefined, 2), 'utf8');
+  const options = { blobHTTPHeaders: { blobContentType: 'application/json' } };
+  const uploadResponse = await blockBlobClient.upload(JSON.stringify(Applist, undefined, 2), contentLength, options);
+  console.log("done");
+  }catch (error){
+    console.error(error);
+  }
+}
+
+// Convert stream to text
+// helper to downloadBlob
+async function streamToText(readable) {
+  readable.setEncoding('utf8');
+  let data = '';
+  for await (const chunk of readable) {
+    data += chunk;
+  }
+  listOfApps = JSON.parse(data);
+  return listOfApps;
+}
+
+
+
 
 /*
 async function listBlobs(clientContainer){
@@ -42,25 +74,3 @@ for await (const blob of clientContainer.listBlobsFlat()) {
   );
 }
 }*/
-
-async function downloadBlob(clientContainer, blobName){
-  const downloadBlockBlobResponse = await clientContainer.getBlockBlobClient(blobName).download(0);
-  console.log('\nDownloaded blob content...');
-  return await streamToText(downloadBlockBlobResponse.readableStreamBody);
- /*console.log(
-  '\t',
-  await streamToText(downloadBlockBlobResponse.readableStreamBody)
-);*/
-}
-
-// Convert stream to text
-// helper to downloadBlob
-async function streamToText(readable) {
-  readable.setEncoding('utf8');
-  let data = '';
-  for await (const chunk of readable) {
-    data += chunk;
-  }
-  listOfApps = JSON.parse(data);
-  return listOfApps;
-}
