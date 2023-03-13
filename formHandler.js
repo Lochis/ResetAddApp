@@ -1,6 +1,4 @@
-
-
-export default function pushAppObject(formData){
+function pushAppObject(formData){
 	console.log(formData);
 	let appName = "";
 	let VASPReport = "";
@@ -34,4 +32,8 @@ export default function pushAppObject(formData){
     };
 
     return fullJson;
+}
+
+module.exports ={
+    pushAppObject: pushAppObject
 }

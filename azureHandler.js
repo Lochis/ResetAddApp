@@ -1,7 +1,7 @@
-import { BlobServiceClient } from "@azure/storage-blob";
-import { DefaultAzureCredential } from '@azure/identity';
+var { BlobServiceClient } = require("@azure/storage-blob");
+//var { DefaultAzureCredential } = require('@azure/identity');
 //import { uuidv1 } from "uuid";
-import {} from 'dotenv/config';
+require ('dotenv/config');
 
 let listOfApps = {};
 
@@ -14,7 +14,7 @@ const blobServiceClient = BlobServiceClient.fromConnectionString(
 
 let clientContainer = blobServiceClient.getContainerClient(process.env.CONTAINER)
 
-export const init = () => {
+const init = () => {
   try {
     console.log("Azure Blob storage v12 - Applist");
     return downloadBlob(clientContainer, process.env.BLOBNAME)
@@ -31,7 +31,7 @@ async function downloadBlob(){
   return await streamToText(downloadBlockBlobResponse.readableStreamBody);
 }
 
-export const uploadBlob = async (Applist) => {
+const uploadBlob = async (Applist) => {
   try {
   const blockBlobClient = clientContainer.getBlockBlobClient(process.env.BLOBNAME);
   const contentLength = Buffer.byteLength(JSON.stringify(Applist, undefined, 2), 'utf8');
@@ -55,8 +55,10 @@ async function streamToText(readable) {
   return listOfApps;
 }
 
-
-
+module.exports = {
+  init: init,
+  uploadBlob: uploadBlob
+}
 
 /*
 async function listBlobs(clientContainer){

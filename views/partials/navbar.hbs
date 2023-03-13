@@ -1,0 +1,39 @@
+<header class="p-3 text-bg-dark">
+    <div class="container-fluid">
+      <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+        <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center justify-content-lg-start mb-md-0">
+          <li>
+            <a href="/" class=" me-lg-auto mr-5 text-white text-decoration-none">
+              <span class="fs-4" href="/">{{title}}</span>
+            </a>
+          </li>
+          {{#if isAuthenticated}}
+          {{#if inApp}}
+          <li>
+            <button type="button" id="load-list" class="btn btn-outline-light me-2">Load List</button>
+          </li>
+          <li>
+            <button type="button" id="to-the-moon" class="btn btn-outline-light me-2">Update Azure</button>
+          </li>
+          {{/if}}
+          {{/if}}
+          {{#unless inApp}}
+          <li>
+            <a href="/addApp" class="nav-link px-2 text-white">Add App</a>
+          </li>
+          {{/unless}}
+        </ul>
+
+        <div class="text-end">
+          {{#if isAuthenticated}}
+            <button type="button" onclick="window.location.href='/auth/signout';" class="btn btn-outline-light me-2">Sign Out</button>
+          {{else}}
+            <button type="button" onclick="window.location.href='/auth/signin';" class="btn btn-outline-light me-2">Sign In</button>
+        {{/if}}
+          {{#if isAuthenticated}}
+            {{name}}
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </header>
