@@ -1,7 +1,9 @@
 # ResetAddApp
 Reads and writes to Azure Blob Storage container to use JSON file as pseudo database
 
-Wrapped Azure AD SSO functionality to only allow certain users to use the web app.
+Wrapped Azure AD SSO functionality to only allow certain users to use the web app
+- Hosted the web app in Azure Web App, free plan
+- Set up Enterprise Application
 
 .env is hidden, but used https://github.com/Azure-Samples/ms-identity-node to get me on the right track
 
