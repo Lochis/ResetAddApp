@@ -1,6 +1,6 @@
 {
   "name": "resetaddapp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Web Application to make the adding of application data more efficient",
   "scripts": {
     "start": "node ./bin/www"
