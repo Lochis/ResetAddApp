@@ -9,7 +9,7 @@ var msal = require('@azure/msal-node');
 var {
     msalConfig,
     REDIRECT_URI,
-    POST_LOGOUT_REDIRECT_URI
+    POST_LOGOUT_REDIRECT_URI,
 } = require('../authConfig');
 
 const router = express.Router();
