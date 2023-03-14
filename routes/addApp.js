@@ -51,14 +51,14 @@ router.post('/submit-form', (req, res)=> {
     } else {
 
       if (formData.status != "Option" && formData.VASPReport != "Default") {
-        Applist.rows.push(pushAppObject(formData));
+        Applist.rows.unshift(pushAppObject(formData));
         console.log(Applist.rows[Applist.rows.length-1])
         res.render('addApp', {
             title: 'AMDSB Application Approvals',
             inApp: true,
             isAuthenticated: req.session.isAuthenticated,
             name: req.session.account?.name,
-            applist: Applist.rows.reverse(),
+            applist: Applist.rows,
             });
       } else {
         if (formData.status == "Option") {
@@ -93,7 +93,7 @@ router.post('/update-azure', async (req, res) => {
         inApp: true,
         isAuthenticated: req.session.isAuthenticated,
         name: req.session.account?.name,
-        applist: Applist.rows.reverse(),
+        applist: Applist.rows,
         });
   })
   
@@ -107,7 +107,7 @@ router.post('/update-azure', async (req, res) => {
         inApp: true,
         isAuthenticated: req.session.isAuthenticated,
         name: req.session.account?.name,
-        applist: Applist.rows.reverse(),
+        applist: Applist.rows,
         });
   })
 
