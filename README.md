@@ -10,6 +10,10 @@ Wrapped Azure AD SSO functionality to only allow certain users to use the web ap
 .env is hidden, but used https://github.com/Azure-Samples/ms-identity-node to get me on the right track
 
 TODO:
-- Styling (Very barebones at the moment, using html, bootstrap, and hbs templates)
+- Styling (Very barebones at the moment, using html, bootstrap)
+      - updated styling using bootstrap, lacks content (but for the functionality, it doesn't need it)
 - Automated reading of Excel online spreadsheet and/or detecting when a new folder is uploaded to sharepoint directory to then copy into own directory
       - Might be hard to do using the Microsoft graph api since I do not have access to the guest tenant...
+      - Conditional Access perms do not allow this, have to find a work around
+
+- Create how to video on root route after authentication
