@@ -1,4 +1,4 @@
-# ResetAddApp 
+# ResetAddApp Web Application
 http://resetaddapp.azurewebsites.net/
 Reads and writes to Azure Blob Storage container to use JSON file as pseudo database
 
