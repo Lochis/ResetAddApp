@@ -1,5 +1,6 @@
 # ResetAddApp Web Application
 http://resetaddapp.azurewebsites.net/
+
 Reads and writes to Azure Blob Storage container to use JSON file as pseudo database
 
 Wrapped Azure AD SSO functionality to only allow certain users to use the web app
