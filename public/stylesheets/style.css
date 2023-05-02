@@ -7,6 +7,10 @@ header{
   margin-bottom: 20px;
 }
 
+.modal{
+  z-index: 100000;
+}
+
 a {
   color: #00B7FF;
 }

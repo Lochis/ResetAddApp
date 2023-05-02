@@ -3,25 +3,54 @@
  * Licensed under the MIT License.
  */
 
-var express = require('express');
-var router = express.Router();
-var {init, uploadBlob} = require('../azureHandler.js');
-var {pushAppObject} = require('../formHandler.js');
-var {Client} = require('@microsoft/microsoft-graph-client');
+const express = require('express');
+const https = require('https');
+const router = express.Router();
+const {init, uploadBlob} = require('../azureHandler.js');
+const {pushAppObject} = require('../formHandler.js');
+const {Client} = require('@microsoft/microsoft-graph-client');
 //var {SPO} = require('../spHandler.js');
+
+
+var topDeskTickets = '';
+var finalMatches = [];
 
 let Applist = {};
 
+ var options = {
+    'method': 'GET',
+    'headers': {
+      'Authorization': process.env.TOPDESK_BASIC_AUTH
+    }
+  };
+  const req = https.request("https://amdsb.topdesk.net/tas/api/incidents?query=category.name==('App Approval Request');processingStatus.name!=('Waiting for Vendor')&pageSize=400", options, (res) => {
+  
+    res.on('data', (chunk) => {
+      topDeskTickets += chunk;
+    });
+  
+    res.on('end', () => {
+      try{
+        topDeskTickets = JSON.parse(topDeskTickets);
+      } catch (e){
+        console.error(e);
+      }
+      
+    });
+  });
+  
+  req.end();
+
 router.get('/', (req, res, next) => {
     try {
-      //SPO();
-  test(req);
     res.render('addApp', {
         title: 'AMDSB Application Approvals',
         inApp: true,
         isAuthenticated: req.session.isAuthenticated,
         name: req.session.account?.name,
         applist: Applist.rows,
+        crossRef: finalMatches,
+        allTickets: topDeskTickets,
         });
     } catch(error) {
         console.error(error);
@@ -61,7 +90,71 @@ async function loadAppList(){
 
 router.post('/load-list', async (req, res)=> {
     Applist = await loadAppList();
-    res.send('Loaded Applist');
+    res.json({
+        title: 'AMDSB Application Approvals',
+        inApp: true,
+        isAuthenticated: req.session.isAuthenticated,
+        name: req.session.account?.name,
+        applist: Applist.rows,
+        crossRef: finalMatches,
+        allTickets: topDeskTickets,
+      });
+})
+
+// cross reference topdesk tickets and application approvals to see if there are any matches.
+router.post('/cross-ref', async (req, res) => {
+  const applistReg = /<a[^>]+>([^<]+)/g;
+  const topDeskReg = /Name of the app\r\n- ([^\r]+)/g;
+
+  let match;
+  const applistNames = [];
+  const topDeskNames = [];
+  finalMatches = [];
+
+  // gather all application names
+    // applist
+    for (let i = 0; i < Applist.rows.length; i++) {
+      const app = Applist.rows[i].Application;
+      let match;
+    
+      while ((match = applistReg.exec(app)) !== null) {
+        applistNames.push(match[1]);
+      }
+    }
+    // topdesk
+    for (let i = 0; i < topDeskTickets.length; i++) {
+      const ticket = topDeskTickets[i].request;
+      let match;
+
+    while ((match = topDeskReg.exec(ticket)) !== null) {
+      topDeskNames.push(match[1]);
+    }
+  }
+
+  // now we must test applist data on topdesk data to see if there are any matches
+
+    for(let i = 0; i < topDeskNames.length; i++){
+      let topDeskWords = topDeskNames[i].split(' ');
+      let firstWord = topDeskWords[0].replace(/"/g, '').trim();
+      
+
+        for(let j = 0; j < applistNames.length; j++){
+          let applistWords = applistNames[j].split(' ');
+          if (applistWords.includes(firstWord)){
+            finalMatches.push({TopDesk: topDeskNames[i].replace(/"/g, '').trim(), Applist: applistNames[j]});
+          }
+      }
+    }
+
+    res.json({
+      title: 'AMDSB Application Approvals',
+      inApp: true,
+      isAuthenticated: req.session.isAuthenticated,
+      name: req.session.account?.name,
+      applist: Applist.rows,
+      crossRef: finalMatches,
+      allTickets: topDeskTickets,
+      });
 })
 
 router.post('/submit-form', (req, res)=> {
@@ -75,13 +168,15 @@ router.post('/submit-form', (req, res)=> {
       if (formData.status != "Option" && formData.VASPReport != "Default") {
         Applist.rows.unshift(pushAppObject(formData));
         console.log(Applist.rows[Applist.rows.length-1])
-        res.render('addApp', {
-            title: 'AMDSB Application Approvals',
-            inApp: true,
-            isAuthenticated: req.session.isAuthenticated,
-            name: req.session.account?.name,
-            applist: Applist.rows,
-            });
+        res.json({
+          title: 'AMDSB Application Approvals',
+          inApp: true,
+          isAuthenticated: req.session.isAuthenticated,
+          name: req.session.account?.name,
+          applist: Applist.rows,
+          crossRef: finalMatches,
+          allTickets: topDeskTickets,
+          });
       } else {
         if (formData.status == "Option") {
          res.send("Choose a Status other than default");
@@ -110,13 +205,15 @@ router.post('/update-azure', async (req, res) => {
   })
   
   router.get('/post-action', (req, res) => {
-    res.render('addApp', {
-        title: 'AMDSB Application Approvals',
-        inApp: true,
-        isAuthenticated: req.session.isAuthenticated,
-        name: req.session.account?.name,
-        applist: Applist.rows,
-        });
+    res.json({
+      title: 'AMDSB Application Approvals',
+      inApp: true,
+      isAuthenticated: req.session.isAuthenticated,
+      name: req.session.account?.name,
+      applist: Applist.rows,
+      crossRef: finalMatches,
+      allTickets: topDeskTickets,
+      });
   })
   
   router.post('/delete-app', (req, res) =>{
@@ -124,13 +221,15 @@ router.post('/update-azure', async (req, res) => {
     Applist.rows.splice(buttonId, 1);
     console.log(Applist.rows.length);
     
-    res.render('addApp', {
-        title: 'AMDSB Application Approvals',
-        inApp: true,
-        isAuthenticated: req.session.isAuthenticated,
-        name: req.session.account?.name,
-        applist: Applist.rows,
-        });
+    res.json({
+      title: 'AMDSB Application Approvals',
+      inApp: true,
+      isAuthenticated: req.session.isAuthenticated,
+      name: req.session.account?.name,
+      applist: Applist.rows,
+      crossRef: finalMatches,
+      allTickets: topDeskTickets,
+      });
   })
 
 module.exports = router;

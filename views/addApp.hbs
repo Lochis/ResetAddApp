@@ -12,11 +12,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link rel="stylesheet" href="../public/stylesheets/style.css">
-    
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js" integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 </head>
 
 <body>
@@ -65,7 +60,7 @@
             <div class="accordion" id="accordion">
                 <!-- decending, newest shows at the top -->
                 {{#each applist}}
-                    <div class="accordion-item">
+                    <div class="accordion-item" id="item-{{@index}}">
                         <h2 class="accordion-header" id="heading{{@index}}">
                             <button class="accordion-button bg-dark" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#collapse{{@index}}" aria-expanded="false" aria-controls="collapse{{@index}}">
@@ -96,18 +91,49 @@
         
                 </div>
             </div>
-            
+
+                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Potential Matches</h5>
+                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="modalBody">
+
+                    </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                        </div>
+                    </div>
+
+         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js" integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
         <script>
+            toastr.options = {
+                positionClass: 'toast-top-center',
+
+            };
+
             $('#accordion').on('click', '.delete-btn', function () {
                 console.log("button clicked");
                 var buttonId = $(this).data('id');
+                let ApplicationName = $('#item-' + buttonId).find('h5.applicationLink.mb-0').html();
                 $.ajax({
                     url: '/addApp/delete-app',
                     type: 'POST',
                     data: { id: buttonId },
                     success: function (data) {
-                        toastr.success(`Button Id: ${buttonId} was deleted`);
-                        window.location.href = '/addApp';
+                        toastr.success(`Button Id: ${buttonId} was deleted<br/>App Name: ${ApplicationName}`, {
+                        positionClass: "toast-top-center" 
+                        });
+                        $('#item-' + buttonId).remove();
+                        //window.location.href = '/addApp';
                     }
                 });
             });
@@ -119,8 +145,6 @@
                     data: { id: buttonId },
                     success: function (data) {
                         toastr.success("Upload Successful");
-
-                        window.location.href = '/addApp';
                     }
                 });
             });
@@ -133,6 +157,33 @@
                     success: function (data) {
                         window.location.href = '/addApp';
                         toastr.success("Load Successful")
+                    }
+                });
+            });
+            $("#cross-ref").click(function () {
+                var buttonId = $(this).data('id');
+                $.ajax({
+                    url: '/addApp/cross-ref',
+                    type: 'POST',
+                    data: { id: buttonId },
+                    success: function (data) {
+                        /*toastr.success(`Cross Reference Complete`, {
+                        positionClass: "toast-top-center" 
+                        });*/
+
+                        console.log(data.crossRef);
+                            const modalBody = document.getElementById('modalBody');
+                            for(let i=0; i < data.crossRef.length; i++){
+                                 modalBody.innerHTML  += `
+                                    TopDesk: ${data.crossRef[i]["TopDesk"]}
+                                <br/>
+                                    Applist: ${data.crossRef[i]["Applist"]}
+                                <hr style="width: 80%">
+                                <br/>
+                                `;
+                            }
+
+                        $(exampleModal).modal('show');
                     }
                 });
             });
