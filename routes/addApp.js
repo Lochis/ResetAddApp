@@ -58,25 +58,6 @@ router.get('/', (req, res, next) => {
     }
 });
 
-async function test(req){
-  try{
-  const graphClient = Client.init({
-    authProvider: (done) => {
-      done(null, req.session.accessToken);
-    }
-  });
-
-  //const channels = await graphClient.api('/teams/854fbd34-2554-4da6-8974-9aff2a09eaf0/channels')
-  const channels = await graphClient.api('/me/joinedTeams')
-  //.expand('channels')
-  .get();
-
-  console.log(channels);
-}catch(err) {
-  console.error(err);
-}
-}
-
 // inital load of applist data
 async function loadAppList(){
     try{
@@ -105,7 +86,10 @@ router.post('/load-list', async (req, res)=> {
 router.post('/cross-ref', async (req, res) => {
   const applistReg = /<a[^>]+>([^<]+)/g;
   const topDeskReg = /Name of the app\r\n- ([^\r]+)/g;
-
+  if(Applist.rows.length < 1){
+    Applist = await loadAppList();
+  }
+  
   let match;
   const applistNames = [];
   const topDeskNames = [];

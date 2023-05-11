@@ -173,6 +173,7 @@
 
                         console.log(data.crossRef);
                             const modalBody = document.getElementById('modalBody');
+                            modalBody.innerHTML = "";
                             for(let i=0; i < data.crossRef.length; i++){
                                  modalBody.innerHTML  += `
                                     TopDesk: ${data.crossRef[i]["TopDesk"]}
@@ -187,6 +188,30 @@
                     }
                 });
             });
+
+            $("#qrcode").click(function () {
+                $.ajax({
+                    url: '/addApp/qr',
+                    type: 'POST',
+                    success: function (data) {
+                        /*toastr.success(`Cross Reference Complete`, {
+                        positionClass: "toast-top-center" 
+                        });*/
+
+                        
+                            const modalBody = document.getElementById('modalBody');
+                            modalBody.innerHTML = "";
+                            for(let i=0; i < data.crossRef.length; i++){
+                                 modalBody.innerHTML  += `
+                                    <img src="${data.qrImg}"/>
+                                `;
+                            }
+
+                        $(exampleModal).modal('show');
+                    }
+                });
+            });
+                
 
         </script>
         {{else}}
