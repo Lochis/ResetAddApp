@@ -26,12 +26,14 @@
           {{/if}}
           {{#unless inApp}}
           {{#unless inInv}}
+          {{#if isAuthenticated}}
           <li>
             <a href="/addApp" class="nav-link px-2 text-white">Add App</a>
           </li>
           <li>
             <a href="/inventory" class="nav-link px-2 text-white">Inventory</a>
           </li>
+          {{/if}}
           {{/unless}}
           {{/unless}}
         </ul>
