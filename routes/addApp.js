@@ -30,7 +30,7 @@ let Applist = {};
       'Authorization': process.env.TOPDESK_BASIC_AUTH
     }
   };
-  const req = https.request("https://amdsb.topdesk.net/tas/api/incidents?query=category.name==('App Approval Request');processingStatus.name!=('Waiting for Vendor')&pageSize=400", options, (res) => {
+  const req = https.request("https://amdsb.topdesk.net/tas/api/incidents?query=category.name==('App Approval Request');processingStatus.name!=('Waiting for Vendor')&pageSize=10", options, (res) => {
   
     res.on('data', (chunk) => {
       topDeskTickets += chunk;
@@ -39,6 +39,15 @@ let Applist = {};
     res.on('end', () => {
       try{
         topDeskTickets = JSON.parse(topDeskTickets);
+
+        fs.writeFile('myjsonfile.json', JSON.stringify(topDeskTickets, null, 2), (error) => {
+          if (error) {
+            console.log("An error has occured ", error);
+          }
+          else {
+            console.log("Data wirtten successfully to disk");
+          }
+        });
       } catch (e){
         console.error(e);
       }
@@ -53,19 +62,26 @@ let Applist = {};
   async function loginMicrosoftPuppet (isAuth, name) {
 
     if (isAuth) { 
-
+    const downloadPath = path.resolve('./routes/files/');
     const browser = await puppeteer.launch({headless: false});
     const page = await browser.newPage();
+
+    const client = await page.target().createCDPSession()
+    await client.send('Page.setDownloadBehavior', {
+      behavior: 'allow',
+      userDataDir: './',
+      downloadPath: downloadPath,
+    })
 
     const url = "https://ecno.sharepoint.com/sites/VASPDocumentPublication/Shared%20Documents/Forms/AllItems.aspx?FolderCTID=0x01200040DCD9A2FF9E1E42A3EF9EFD2DD260A1&id=%2Fsites%2FVASPDocumentPublication%2FShared%20Documents%2FGeneral%2FAPP%20STATUS%20SPREADSHEET&viewid=22be3505%2D5f01%2D42ae%2D9bae%2D5ba2d20af8c9";
 
     await page.setViewport({width: 1280, height: 800});
     await page.goto(url);
 
-    const navigationPromise = page.waitForNavigation();
+    const navigationPromise = page.waitForNavigation({ waitUntil: 'networkidle0' });
 
     // type in email
-    await page.waitForSelector('#i0116');
+    await page.waitForSelector('#idSIButton9');
     await page.type('#i0116', process.env.SPO_USERNAME);
     // click next button
     await page.click('#idSIButton9');
@@ -75,7 +91,7 @@ let Applist = {};
 
     // wait and type
     const passwordBoxSelector = '#i0118';
-    await page.waitForSelector(passwordBoxSelector);
+    await page.waitForSelector("#idSIButton9");
     await page.type('#i0118', process.env.SPO_PASSWORD);
     await page.click("#idSIButton9");
     console.log("Got to Password screen");
@@ -87,10 +103,11 @@ let Applist = {};
     await page.click("#idSIButton9");
     console.log("Got to Stay Signed in screen");
 
-    await page.waitForNavigation({ waitUntil: 'networkidle0' });
+    await navigationPromise;
 
     await page.screenshot({ path: 'screenshot.png' });
 
+    await page.waitForSelector("button[name='Download']");
     await page.click("button[name='Download']");
     //await browser.close();
 
@@ -98,7 +115,7 @@ let Applist = {};
     let strName = name.split(" ");
     strName = strName.join(".");
     console.log(strName);
-
+/*
     // Usage example: Specify the directory path
     const downloadsFolderPath = 'C:\\Users\\' + strName + '\\Downloads';
 
@@ -122,6 +139,7 @@ let Applist = {};
        
       
     }, 5000);
+    */
 
     }
   };
