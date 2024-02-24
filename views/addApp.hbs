@@ -19,6 +19,13 @@
     {{#if isAuthenticated }}
     
         <div id="form-container" class="container">
+             
+            <button type="button" id="load-list" class="btn btn-outline-dark me-2">Load List</button>
+          
+            <button type="button" id="to-the-moon" class="btn btn-outline-dark me-2">Update Azure</button>
+          
+            <button type="button" id="cross-ref" class="btn btn-outline-dark me-2">Cross Reference</button>
+          
             <form id="addApp" method="POST" action="/addApp/submit-form">
                 <div class="form-row">
                     <div class="col">
@@ -148,6 +155,7 @@
                     }
                 });
             });
+
             $("#load-list").click(function () {
                 var buttonId = $(this).data('id');
                 $.ajax({

@@ -20,6 +20,7 @@ var usersRouter = require('./routes/users');
 var authRouter = require('./routes/auth');
 var addAppRouter = require('./routes/addApp');
 var addInventoryRouter = require('./routes/inventory');
+var vaspSpreadsheetRouter = require('./routes/VASPspreadsheet');
 
 // initialize express
 var app = express();
@@ -57,6 +58,7 @@ app.use('/users', usersRouter);
 app.use('/auth', authRouter);
 app.use('/addApp', addAppRouter);
 app.use('/inventory', addInventoryRouter);
+app.use('/vaspSpreadsheet', vaspSpreadsheetRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

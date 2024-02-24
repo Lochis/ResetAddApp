@@ -9,10 +9,8 @@ const router = express.Router();
 const {init, uploadBlob} = require('../azureHandler.js');
 const {pushAppObject} = require('../formHandler.js');
 const {Client} = require('@microsoft/microsoft-graph-client');
-const puppeteer = require ('puppeteer');
 const { text } = require('body-parser');
 const fs = require('fs');
-const path = require('path');
 const { setDefaultAutoSelectFamilyAttemptTimeout } = require('net');
 
 require('dotenv').config();
@@ -58,115 +56,6 @@ let Applist = {};
   req.end();
 
 
-  // using puppeteer to mimic my log in onto ecno sharepoint location
-  async function loginMicrosoftPuppet (isAuth, name) {
-
-    if (isAuth) { 
-    const downloadPath = path.resolve('./routes/files/');
-    const browser = await puppeteer.launch({headless: false});
-    const page = await browser.newPage();
-
-    const client = await page.target().createCDPSession()
-    await client.send('Page.setDownloadBehavior', {
-      behavior: 'allow',
-      userDataDir: './',
-      downloadPath: downloadPath,
-    })
-
-    const url = "https://ecno.sharepoint.com/sites/VASPDocumentPublication/Shared%20Documents/Forms/AllItems.aspx?FolderCTID=0x01200040DCD9A2FF9E1E42A3EF9EFD2DD260A1&id=%2Fsites%2FVASPDocumentPublication%2FShared%20Documents%2FGeneral%2FAPP%20STATUS%20SPREADSHEET&viewid=22be3505%2D5f01%2D42ae%2D9bae%2D5ba2d20af8c9";
-
-    await page.setViewport({width: 1280, height: 800});
-    await page.goto(url);
-
-    const navigationPromise = page.waitForNavigation({ waitUntil: 'networkidle0' });
-
-    // type in email
-    await page.waitForSelector('#idSIButton9');
-    await page.type('#i0116', process.env.SPO_USERNAME);
-    // click next button
-    await page.click('#idSIButton9');
-    console.log("Got to email screen");
-
-    await navigationPromise;
-
-    // wait and type
-    const passwordBoxSelector = '#i0118';
-    await page.waitForSelector("#idSIButton9");
-    await page.type('#i0118', process.env.SPO_PASSWORD);
-    await page.click("#idSIButton9");
-    console.log("Got to Password screen");
-
-    await navigationPromise;
-   
-    // click yes button
-    const textSelector = await page.waitForSelector('#idSIButton9');
-    await page.click("#idSIButton9");
-    console.log("Got to Stay Signed in screen");
-
-    await navigationPromise;
-
-    await page.screenshot({ path: 'screenshot.png' });
-
-    await page.waitForSelector("button[name='Download']");
-    await page.click("button[name='Download']");
-    //await browser.close();
-
-
-    let strName = name.split(" ");
-    strName = strName.join(".");
-    console.log(strName);
-/*
-    // Usage example: Specify the directory path
-    const downloadsFolderPath = 'C:\\Users\\' + strName + '\\Downloads';
-
-    setTimeout(() => {
-      
-      const latestFile = getLatestFile(downloadsFolderPath);
-        
-
-      setTimeout(() => {
-          fs.rename(latestFile, './files/VASP.zip', function (err) {
-            if (err) throw err
-            console.log('Successfully renamed - AKA moved!')
-          });
-    
-          if (latestFile) {
-            console.log('Latest file:', latestFile);
-          } else {
-            console.log('No files found in the specified directory.');
-          }
-      }, 3000);
-       
-      
-    }, 5000);
-    */
-
-    }
-  };
-
-function getLatestFile(directoryPath) {
-      const files = fs.readdirSync(directoryPath);
-    
-      if (files.length === 0) {
-        console.error('Directory is empty.');
-        return null;
-      }
-    
-      // Get the full paths of the files
-      const filePaths = files.map(file => path.join(directoryPath, file));
-    
-      // Sort the files by modification time in descending order
-      const sortedFiles = filePaths.sort((a, b) => {
-        const statA = fs.statSync(a);
-        const statB = fs.statSync(b);
-        return statB.mtime.getTime() - statA.mtime.getTime();
-      });
-    
-      // Return the path of the latest file
-      return sortedFiles[0];
-    }
-
-
 router.get('/', (req, res, next) => {
     try {
     res.render('addApp', {
@@ -178,8 +67,6 @@ router.get('/', (req, res, next) => {
         crossRef: finalMatches,
         allTickets: topDeskTickets,
         });
-
-        loginMicrosoftPuppet(req.session.isAuthenticated, req.session.account.name);
     } catch(error) {
         console.error(error);
         res.status(500).send('Internal Server Error');

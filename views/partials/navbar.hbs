@@ -7,35 +7,16 @@
             </a>
           </li>
           {{#if isAuthenticated}}
-          {{#if inApp}}
-          <li>
-            <button type="button" id="load-list" class="btn btn-outline-light me-2">Load List</button>
-          </li>
-          <li>
-            <button type="button" id="to-the-moon" class="btn btn-outline-light me-2">Update Azure</button>
-          </li>
-          <li>
-            <button type="button" id="cross-ref" class="btn btn-outline-light me-2">Cross Reference</button>
-          </li>
-          {{/if}}
-          {{#if inInv}}
-          <li>
-            <button type="button" id="qrcode" class="btn btn-outline-light me-2">QrCode</button>
-          </li>
-          {{/if}}
-          {{/if}}
-          {{#unless inApp}}
-          {{#unless inInv}}
-          {{#if isAuthenticated}}
           <li>
             <a href="/addApp" class="nav-link px-2 text-white">Add App</a>
           </li>
           <li>
             <a href="/inventory" class="nav-link px-2 text-white">Inventory</a>
           </li>
+          <li>
+            <a href="/vaspSpreadsheet" class="nav-link px-2 text-white">VASP</a>
+          </li>
           {{/if}}
-          {{/unless}}
-          {{/unless}}
         </ul>
 
         <div class="text-end">
