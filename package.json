@@ -27,6 +27,7 @@
     "morgan": "^1.10.0",
     "node": "^19.6.1",
     "node-sp-auth": "^3.0.7",
+    "node-xlsx": "^0.23.0",
     "puppeteer": "^22.0.0",
     "qrcode": "^1.5.3",
     "request-promise": "^4.2.6",
