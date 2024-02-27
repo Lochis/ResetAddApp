@@ -64,7 +64,7 @@ async function loginMicrosoftPuppet(isAuth, name) {
     await page.click('#idSIButton9');
     console.log("Got to email screen");
 
-    await navigationPromise;
+  // await navigationPromise
 
     // wait and type
     const passwordBoxSelector = '#i0118';
@@ -73,7 +73,7 @@ async function loginMicrosoftPuppet(isAuth, name) {
     await page.click("#idSIButton9");
     console.log("Got to Password screen");
 
-    await navigationPromise;
+   // await navigationPromise
 
     // click yes button
     const textSelector = await page.waitForSelector('#idSIButton9');
