@@ -17,6 +17,7 @@ router.get('/', (req, res, next) => {
         title: 'AMDSB Application Approvals',
         isAuthenticated: req.session.isAuthenticated,
         name: req.session.account?.name,
+        apps: apps,
         });
     } catch(error) {
         console.error(error);
@@ -25,13 +26,13 @@ router.get('/', (req, res, next) => {
 });
 
 router.post('/get-spreadsheet', async (req, res) => {
-  // D:/Repos/RESETADDAPP/routes/files/spreadsheet\APP STATUS SPREADSHEET/VASP APP REQUEST STATUS Feb 22 2024.xlsx
-  //parseXLSX('D:/Repos/RESETADDAPP/routes/files/spreadsheet/APP STATUS SPREADSHEET/VASP APP REQUEST STATUS Feb 22 2024.xlsx')
+   //D:/Repos/RESETADDAPP/routes/files/spreadsheet\APP STATUS SPREADSHEET/VASP APP REQUEST STATUS Feb 22 2024.xlsx
+  await parseXLSX('D:/Repos/RESETADDAPP/routes/files/spreadsheet/APP STATUS SPREADSHEET/VASP APP REQUEST STATUS Feb 22 2024.xlsx')
  
-    await loginMicrosoftPuppet(req.session.isAuthenticated, req.session.account.name);
-    await processFiles();
+    //await loginMicrosoftPuppet(req.session.isAuthenticated, req.session.account.name);
+   // await processFiles();
 
-    res.json({message: "Spreadsheet gotten"});
+   res.redirect('/vaspSpreadsheet');
   });
 
 
@@ -64,7 +65,7 @@ async function loginMicrosoftPuppet(isAuth, name) {
     await page.click('#idSIButton9');
     console.log("Got to email screen");
 
-  // await navigationPromise
+   await navigationPromise
 
     // wait and type
     const passwordBoxSelector = '#i0118';
@@ -115,9 +116,74 @@ async function processFiles(){
   }, 4000);
 }
 
-  function parseXLSX(spreadsheet) {
+  let apps = {
+    completedApps: [],
+    noAssessmentApps: [],
+    pendingApps: [],
+    progressApps: [],
+  };
+
+  async function parseXLSX(spreadsheet) {
     const parsed = xlsx.parse(fs.readFileSync(spreadsheet));
-    console.log(parsed[0].data[13]);
+    let section = "";
+    let data = parsed[0].data;
+
+    let completedApps = [];
+    let noAssessmentApps = [];
+    let progressApps = [];
+    let pendingApps = [];
+    
+    //console.log(data[0][4]);
+    
+
+    // loop through all items in vasp spreadsheet after 13
+    for (var j = 0; j < data.length; j++){
+
+      // get headers of completed apps and add subsequent rows to completedApps
+      if (data[j][0] === "Completed Apps:  Software Title"){
+        completedApps.headers = cleanHeaders(data[j]);
+        section = "completed";
+      } else if (data[j][0] === "No Assessment Completed:  Software Title") {
+        noAssessmentApps.headers = cleanHeaders(data[j]);
+        section = "noAssessment";
+      } else if (data[j][0] === "Apps in Progress:  Software Title"){
+        progressApps.headers = cleanHeaders(data[j]);
+        section = "progress";
+      } else if (data[j][0]?.toString().includes("Pending List")){
+        pendingApps.headers = cleanHeaders(data[j]);
+        section = "pending";
+      } 
+
+        if (section === "completed"){
+          completedApps.push(addEmptyColumns(data[j]));
+        } else if (section === "noAssessment"){
+          noAssessmentApps.push(addEmptyColumns(data[j]));
+        } else if (section === "progress"){
+          progressApps.push(data[j]);
+        } else if (section === "pending"){
+          pendingApps.push(data[j]);
+        }
+    }
+    apps.completedApps = completedApps;
+    apps.noAssessmentApps = noAssessmentApps;
+    apps.progressApps = progressApps;
+    apps.pendingApps = pendingApps;
+  }
+
+  function addEmptyColumns(arr){
+    for (var i = 0; i < arr.length; i++){
+      if (typeof arr[i] === "undefined"){
+        arr[i] = "";
+      }
+    }
+    return arr;
+  }
+
+  function cleanHeaders(arr){
+    for (var i = 0; i < arr.length; i++){
+      arr[i] = arr[i].replace(/(r\n|\n|\r)/gm, " ");
+    }
+    return arr;
   }
 
 
