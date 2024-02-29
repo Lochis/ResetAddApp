@@ -26,11 +26,11 @@ router.get('/', (req, res, next) => {
 });
 
 router.post('/get-spreadsheet', async (req, res) => {
-   //D:/Repos/RESETADDAPP/routes/files/spreadsheet\APP STATUS SPREADSHEET/VASP APP REQUEST STATUS Feb 22 2024.xlsx
-  await parseXLSX('D:/Repos/RESETADDAPP/routes/files/spreadsheet/APP STATUS SPREADSHEET/VASP APP REQUEST STATUS Feb 22 2024.xlsx')
+   //D:/Repos/RESETADDAPP/routes/files/spreadsheet\APP STATUS SPREADSHEET/VASP APP REQUEST STATUS Feb 29 2024.xlsx
+  await parseXLSX('D:/Repos/RESETADDAPP/routes/files/spreadsheet/APP STATUS SPREADSHEET/VASP APP REQUEST STATUS Feb 29 2024.xlsx')
  
     //await loginMicrosoftPuppet(req.session.isAuthenticated, req.session.account.name);
-   // await processFiles();
+    //await processFiles();
 
    res.redirect('/vaspSpreadsheet');
   });
@@ -80,7 +80,7 @@ async function loginMicrosoftPuppet(isAuth, name) {
     const textSelector = await page.waitForSelector('#idSIButton9');
     await page.click("#idSIButton9");
     console.log("Got to Stay Signed in screen");
-
+    
     await navigationPromise;
 
     await page.waitForSelector("button[name='Download']");
@@ -118,9 +118,13 @@ async function processFiles(){
 
   let apps = {
     completedApps: [],
+    completedAppsHeaders: [],
     noAssessmentApps: [],
+    noAssessmentAppsHeaders: [],
     pendingApps: [],
+    pendingAppsHeaders: [],
     progressApps: [],
+    progressAppsHeaders: [],
   };
 
   async function parseXLSX(spreadsheet) {
@@ -139,41 +143,47 @@ async function processFiles(){
     // loop through all items in vasp spreadsheet after 13
     for (var j = 0; j < data.length; j++){
 
+      if (section === "completed"){
+        completedApps.push(addEmptyColumns(data[j]));
+      } else if (section === "noAssessment"){
+        noAssessmentApps.push(addEmptyColumns(data[j]));
+      } else if (section === "progress"){
+        progressApps.push(addEmptyColumns(data[j]));
+      } else if (section === "pending"){
+        pendingApps.push(addEmptyColumns(data[j]));
+      }
+
       // get headers of completed apps and add subsequent rows to completedApps
       if (data[j][0] === "Completed Apps:  Software Title"){
-        completedApps.headers = cleanHeaders(data[j]);
+        apps.completedAppsHeaders = cleanHeaders(data[j]);
         section = "completed";
       } else if (data[j][0] === "No Assessment Completed:  Software Title") {
-        noAssessmentApps.headers = cleanHeaders(data[j]);
+        apps.noAssessmentHeaders = cleanHeaders(data[j]);
         section = "noAssessment";
       } else if (data[j][0] === "Apps in Progress:  Software Title"){
-        progressApps.headers = cleanHeaders(data[j]);
+        apps.progressAppsHeaders = cleanHeaders(data[j]);
         section = "progress";
       } else if (data[j][0]?.toString().includes("Pending List")){
-        pendingApps.headers = cleanHeaders(data[j]);
+        apps.pendingAppsHeaders = cleanHeaders(data[j]);
         section = "pending";
       } 
 
-        if (section === "completed"){
-          completedApps.push(addEmptyColumns(data[j]));
-        } else if (section === "noAssessment"){
-          noAssessmentApps.push(addEmptyColumns(data[j]));
-        } else if (section === "progress"){
-          progressApps.push(data[j]);
-        } else if (section === "pending"){
-          pendingApps.push(data[j]);
-        }
     }
     apps.completedApps = completedApps;
     apps.noAssessmentApps = noAssessmentApps;
     apps.progressApps = progressApps;
     apps.pendingApps = pendingApps;
+
+    console.log("VASP apps have been loaded");
   }
 
   function addEmptyColumns(arr){
     for (var i = 0; i < arr.length; i++){
       if (typeof arr[i] === "undefined"){
         arr[i] = "";
+      }
+      if (i === 5){
+        arr[i] = parseInt((parseFloat(arr[i]) * 100)).toString() + "%";
       }
     }
     return arr;
@@ -182,6 +192,9 @@ async function processFiles(){
   function cleanHeaders(arr){
     for (var i = 0; i < arr.length; i++){
       arr[i] = arr[i].replace(/(r\n|\n|\r)/gm, " ");
+      if (arr[i].toString().includes("Platform")){
+        arr[i] = "Platform";
+      }
     }
     return arr;
   }
