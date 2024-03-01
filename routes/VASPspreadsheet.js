@@ -13,24 +13,27 @@ const extractAllTo = promisify(new zip().extractAllTo);
 
 router.get('/', (req, res, next) => {
     try {
+    
     res.render('vaspSpreadsheet', {
         title: 'AMDSB Application Approvals',
         isAuthenticated: req.session.isAuthenticated,
         name: req.session.account?.name,
         apps: apps,
-        });
+    });
+
     } catch(error) {
         console.error(error);
         res.status(500).send('Internal Server Error');
     }
-});
+
+    });
 
 router.post('/get-spreadsheet', async (req, res) => {
    //D:/Repos/RESETADDAPP/routes/files/spreadsheet\APP STATUS SPREADSHEET/VASP APP REQUEST STATUS Feb 29 2024.xlsx
-  await parseXLSX('D:/Repos/RESETADDAPP/routes/files/spreadsheet/APP STATUS SPREADSHEET/VASP APP REQUEST STATUS Feb 29 2024.xlsx')
+  //await parseXLSX('D:/Repos/RESETADDAPP/routes/files/spreadsheet/APP STATUS SPREADSHEET/VASP APP REQUEST STATUS Feb 29 2024.xlsx')
  
-    //await loginMicrosoftPuppet(req.session.isAuthenticated, req.session.account.name);
-    //await processFiles();
+    await loginMicrosoftPuppet(req.session.isAuthenticated, req.session.account.name);
+    await processFiles();
 
    res.redirect('/vaspSpreadsheet');
   });
