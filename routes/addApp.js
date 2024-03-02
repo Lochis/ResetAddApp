@@ -34,22 +34,21 @@ let Applist = {};
       topDeskTickets += chunk;
     });
   
-    res.on('end', () => {
-      try{
-        topDeskTickets = JSON.parse(topDeskTickets);
+      res.on('end', () => {
+          try{
+              topDeskTickets = JSON.parse(topDeskTickets);
 
-        fs.writeFile('myjsonfile.json', JSON.stringify(topDeskTickets, null, 2), (error) => {
-          if (error) {
-            console.log("An error has occured ", error);
-          }
-          else {
-            console.log("Data wirtten successfully to disk");
-          }
-        });
-      } catch (e){
-        console.error(e);
-      }
-      
+              fs.writeFile('myjsonfile.json', JSON.stringify(topDeskTickets, null, 2), (error) => {
+                  if (error) {
+                      console.log("An error has occured ", error);
+                  }
+                  else {
+                      console.log("Data wirtten successfully to disk");
+                  }
+              });
+          } catch (e){
+              console.error(e);
+      } 
     });
   });
   

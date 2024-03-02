@@ -36,7 +36,7 @@ router.post('/get-spreadsheet', async (req, res) => {
     await processFiles();
 
    res.redirect('/vaspSpreadsheet');
-  });
+});
 
 
 
