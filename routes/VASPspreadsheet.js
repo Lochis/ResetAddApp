@@ -11,9 +11,19 @@ const router = express.Router();
 const rename = promisify(fs.rename);
 const extractAllTo = promisify(new zip().extractAllTo);
 
+let apps = {
+    headers: [],
+    apps: [],
+};
+
 router.get('/', (req, res, next) => {
     try {
     
+    let spreadsheet = getLatestFile('./routes/files/spreadsheet/APP STATUS SPREADSHEET/');
+    if (typeof(spreadsheet) !== undefined){
+        parseXLSX(spreadsheet);   
+    }
+
     res.render('vaspSpreadsheet', {
         title: 'AMDSB Application Approvals',
         isAuthenticated: req.session.isAuthenticated,
@@ -30,14 +40,21 @@ router.get('/', (req, res, next) => {
 
 router.post('/get-spreadsheet', async (req, res) => {
    //D:/Repos/RESETADDAPP/routes/files/spreadsheet\APP STATUS SPREADSHEET/VASP APP REQUEST STATUS Feb 29 2024.xlsx
-  //await parseXLSX('D:/Repos/RESETADDAPP/routes/files/spreadsheet/APP STATUS SPREADSHEET/VASP APP REQUEST STATUS Feb 29 2024.xlsx')
- 
+  //await parseXLSX('D:/Repos/RESETADDAPP/routes/files/spreadsheet/APP STATUS SPREADSHEET/VASP APP REQUEST STATUS Feb 29 2024.xlsx')    
+
     await loginMicrosoftPuppet(req.session.isAuthenticated, req.session.account.name);
     await processFiles();
 
    res.redirect('/vaspSpreadsheet');
 });
 
+router.get('/get-apps', (req, res) => {
+     let spreadsheet = getLatestFile('./routes/files/spreadsheet/APP STATUS SPREADSHEET/');
+    
+    parseXLSX(spreadsheet);   
+
+    res.json({data: apps.apps});
+});
 
 
 // using puppeteer to mimic my log in onto ecno sharepoint location
@@ -119,73 +136,60 @@ async function processFiles(){
   }, 4000);
 }
 
-  let apps = {
-    completedApps: [],
-    completedAppsHeaders: [],
-    noAssessmentApps: [],
-    noAssessmentAppsHeaders: [],
-    pendingApps: [],
-    pendingAppsHeaders: [],
-    progressApps: [],
-    progressAppsHeaders: [],
-  };
 
   async function parseXLSX(spreadsheet) {
     const parsed = xlsx.parse(fs.readFileSync(spreadsheet));
     let section = "";
-    let data = parsed[0].data;
-
-    let completedApps = [];
-    let noAssessmentApps = [];
-    let progressApps = [];
-    let pendingApps = [];
-    
-    //console.log(data[0][4]);
-    
+    let data = parsed[0].data; 
 
     // loop through all items in vasp spreadsheet after 13
     for (var j = 0; j < data.length; j++){
 
-      if (section === "completed"){
-        completedApps.push(addEmptyColumns(data[j]));
+    // flag - true means don't process row, false means process row
+    let flag = true;
+    let row = data[j];
+    
+        if (section === "completed"){
+                row.unshift("Completed");
+                apps.apps.push(addEmptyColumns(row));
       } else if (section === "noAssessment"){
-        noAssessmentApps.push(addEmptyColumns(data[j]));
+             row.unshift("No Assessment");
+            apps.apps.push(addEmptyColumns(row));
       } else if (section === "progress"){
-        progressApps.push(addEmptyColumns(data[j]));
+            row.unshift("In Progress");
+            apps.apps.push(addEmptyColumns(row));
       } else if (section === "pending"){
-        pendingApps.push(addEmptyColumns(data[j]));
+            row.unshift("Pending");
+            apps.apps.push(addEmptyColumns(row));
       }
 
       // get headers of completed apps and add subsequent rows to completedApps
-      if (data[j][0] === "Completed Apps:  Software Title"){
-        apps.completedAppsHeaders = cleanHeaders(data[j]);
-        section = "completed";
-      } else if (data[j][0] === "No Assessment Completed:  Software Title") {
-        apps.noAssessmentHeaders = cleanHeaders(data[j]);
-        section = "noAssessment";
-      } else if (data[j][0] === "Apps in Progress:  Software Title"){
-        apps.progressAppsHeaders = cleanHeaders(data[j]);
-        section = "progress";
-      } else if (data[j][0]?.toString().includes("Pending List")){
-        apps.pendingAppsHeaders = cleanHeaders(data[j]);
-        section = "pending";
+      if (row[0] === "Completed Apps:  Software Title"){
+            row.shift();
+            row.unshift("Software Title");
+            row.unshift("Type");
+
+            apps.headers = cleanHeaders(row);
+            section = "completed";
+      } else if (row[1] === "No Assessment Completed:  Software Title") {
+          section = "noAssessment";
+      } else if (row[1] === "Apps in Progress:  Software Title"){
+          section = "progress";
+      } else if (row[1]?.toString().includes("Pending List")){
+          section = "pending";
       } 
 
     }
-    apps.completedApps = completedApps;
-    apps.noAssessmentApps = noAssessmentApps;
-    apps.progressApps = progressApps;
-    apps.pendingApps = pendingApps;
 
     console.log("VASP apps have been loaded");
   }
 
   function addEmptyColumns(arr){
-    for (var i = 0; i < arr.length; i++){
+    for (var i = 0; i < 12; i++){
       if (typeof arr[i] === "undefined"){
         arr[i] = "";
       }
-      if (i === 5){
+      if (i === 5 || i === 6){
         arr[i] = parseInt((parseFloat(arr[i]) * 100)).toString() + "%";
       }
     }
@@ -194,10 +198,16 @@ async function processFiles(){
 
   function cleanHeaders(arr){
     for (var i = 0; i < arr.length; i++){
-      arr[i] = arr[i].replace(/(r\n|\n|\r)/gm, " ");
-      if (arr[i].toString().includes("Platform")){
-        arr[i] = "Platform";
-      }
+        arr[i] = arr[i].replace(/(r\n|\n|\r)/gm, " ");
+        if (arr[i].toString().includes("Platform")){
+            arr[i] = "Platform";
+        }
+        if (arr[i].toString().includes("Language")){
+          arr[i] = "Language(s)";
+        }
+        if (arr[i].toString().includes("Vendor")){
+            arr[i] = "Creator";
+        }
     }
     return arr;
   }

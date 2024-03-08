@@ -38,7 +38,7 @@ let Applist = {};
           try{
               topDeskTickets = JSON.parse(topDeskTickets);
 
-              fs.writeFile('myjsonfile.json', JSON.stringify(topDeskTickets, null, 2), (error) => {
+              fs.writeFile('topDeskTickets.json', JSON.stringify(topDeskTickets, null, 2), (error) => {
                   if (error) {
                       console.log("An error has occured ", error);
                   }
