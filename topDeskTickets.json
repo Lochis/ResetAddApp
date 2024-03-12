@@ -41,7 +41,10 @@
       "id": "e3b241cf-201a-4409-ab63-a8d3ab7e714a",
       "name": "App Approval Request"
     },
-    "subcategory": null,
+    "subcategory": {
+      "id": "99f0500c-da5b-420c-97b3-b7de8cdac09c",
+      "name": "iOS - Company Portal App"
+    },
     "callType": {
       "id": "b46bd95d-1b4b-5667-bf6a-86531696c8cc",
       "name": "Request"
@@ -64,7 +67,7 @@
       "id": "95417600-ac55-5f28-a060-085c4c50348c",
       "name": "2 weeks"
     },
-    "actualDuration": 0,
+    "actualDuration": 226,
     "targetDate": "2024-03-21T19:28:53.000+0000",
     "onHold": false,
     "onHoldDate": null,
@@ -72,9 +75,9 @@
     "feedbackMessage": null,
     "feedbackRating": null,
     "operator": {
-      "id": "9c8c42ef-8dc2-4715-8aa5-5a934b7d772f",
-      "status": "operatorGroup",
-      "name": "App Requests"
+      "id": "6ee87c6c-a1e8-415c-82f7-a680987ab986",
+      "status": "operator",
+      "name": "Lucas Vandermaarel"
     },
     "operatorGroup": {
       "id": "9c8c42ef-8dc2-4715-8aa5-5a934b7d772f",
@@ -82,14 +85,17 @@
     },
     "supplier": null,
     "processingStatus": {
-      "id": "325ded26-849e-4c9f-94c3-0114ebf7e891",
-      "name": "Logged"
+      "id": "5350a7dd-a387-4261-91ed-e6f357cbc14e",
+      "name": "Closed"
     },
-    "completed": false,
-    "completedDate": null,
-    "closed": false,
-    "closedDate": null,
-    "closureCode": null,
+    "completed": true,
+    "completedDate": "2024-03-08T16:14:00.000+0000",
+    "closed": true,
+    "closedDate": "2024-03-08T16:14:00.000+0000",
+    "closureCode": {
+      "id": "4cb4291f-1103-4fc3-b51d-59ed1822332c",
+      "name": "Information Provided"
+    },
     "timeSpent": 0,
     "timeSpentFirstLine": 0,
     "timeSpentSecondLine": 0,
@@ -105,8 +111,11 @@
     "callDate": "2024-03-07T20:28:53.000+0000",
     "creator": null,
     "creationDate": "2024-03-07T20:28:53.000+0000",
-    "modifier": null,
-    "modificationDate": "2024-03-07T20:28:53.000+0000",
+    "modifier": {
+      "id": "6ee87c6c-a1e8-415c-82f7-a680987ab986",
+      "name": "Lucas Vandermaarel"
+    },
+    "modificationDate": "2024-03-08T16:14:07.000+0000",
     "majorCall": false,
     "majorCallObject": null,
     "publishToSsd": false,

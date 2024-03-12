@@ -19,10 +19,10 @@ let apps = {
 router.get('/', (req, res, next) => {
     try {
     
-    let spreadsheet = getLatestFile('./routes/files/spreadsheet/APP STATUS SPREADSHEET/');
+    /*let spreadsheet = getLatestFile('./routes/files/spreadsheet/APP STATUS SPREADSHEET/');
     if (typeof(spreadsheet) !== undefined){
         parseXLSX(spreadsheet);   
-    }
+    }*/
 
     res.render('vaspSpreadsheet', {
         title: 'AMDSB Application Approvals',
@@ -49,9 +49,12 @@ router.post('/get-spreadsheet', async (req, res) => {
 });
 
 router.get('/get-apps', (req, res) => {
-     let spreadsheet = getLatestFile('./routes/files/spreadsheet/APP STATUS SPREADSHEET/');
-    
-    parseXLSX(spreadsheet);   
+     try {
+         let spreadsheet = getLatestFile('./routes/files/spreadsheet/APP STATUS SPREADSHEET/');
+        parseXLSX(spreadsheet);   
+     } catch (error){
+         console.log("spreadsheet not gotten from VASP");
+     }
 
     res.json({data: apps.apps});
 });
@@ -61,7 +64,7 @@ router.get('/get-apps', (req, res) => {
 async function loginMicrosoftPuppet(isAuth, name) {
   if (isAuth) {
     const downloadPath = path.resolve('./routes/files/spreadsheet/');
-    const browser = await puppeteer.launch({ headless: false });
+    const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
 
     const client = await page.target().createCDPSession()
@@ -189,7 +192,7 @@ async function processFiles(){
       if (typeof arr[i] === "undefined"){
         arr[i] = "";
       }
-      if (i === 5 || i === 6){
+      if (i === 6){
         arr[i] = parseInt((parseFloat(arr[i]) * 100)).toString() + "%";
       }
     }
