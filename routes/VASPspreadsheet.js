@@ -1,62 +1,62 @@
-const puppeteer = require ('puppeteer');
+const puppeteer = require('puppeteer');
 const path = require('path');
 const express = require('express');
 const fs = require('fs');
 const zip = require('adm-zip');
 const { fileLoader } = require('ejs');
 const xlsx = require('node-xlsx');
-const {promisify} = require('util');
+const { promisify } = require('util');
 const router = express.Router();
 
 const rename = promisify(fs.rename);
 const extractAllTo = promisify(new zip().extractAllTo);
 
 let apps = {
-    headers: [],
-    apps: [],
+  headers: [],
+  apps: [],
 };
 
 router.get('/', (req, res, next) => {
-    try {
-    
+  try {
+
     /*let spreadsheet = getLatestFile('./routes/files/spreadsheet/APP STATUS SPREADSHEET/');
     if (typeof(spreadsheet) !== undefined){
         parseXLSX(spreadsheet);   
     }*/
 
     res.render('vaspSpreadsheet', {
-        title: 'AMDSB Application Approvals',
-        isAuthenticated: req.session.isAuthenticated,
-        name: req.session.account?.name,
-        apps: apps,
+      title: 'AMDSB Application Approvals',
+      isAuthenticated: req.session.isAuthenticated,
+      name: req.session.account?.name,
+      apps: apps,
     });
 
-    } catch(error) {
-        console.error(error);
-        res.status(500).send('Internal Server Error');
-    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
 
-    });
+});
 
 router.post('/get-spreadsheet', async (req, res) => {
-   //D:/Repos/RESETADDAPP/routes/files/spreadsheet\APP STATUS SPREADSHEET/VASP APP REQUEST STATUS Feb 29 2024.xlsx
+  //D:/Repos/RESETADDAPP/routes/files/spreadsheet\APP STATUS SPREADSHEET/VASP APP REQUEST STATUS Feb 29 2024.xlsx
   //await parseXLSX('D:/Repos/RESETADDAPP/routes/files/spreadsheet/APP STATUS SPREADSHEET/VASP APP REQUEST STATUS Feb 29 2024.xlsx')    
 
-    await loginMicrosoftPuppet(req.session.isAuthenticated, req.session.account.name);
-    await processFiles();
+  await loginMicrosoftPuppet(req.session.isAuthenticated, req.session.account.name);
+  await processFiles();
 
-   res.redirect('/vaspSpreadsheet');
+  res.redirect('/vaspSpreadsheet');
 });
 
 router.get('/get-apps', (req, res) => {
-     try {
-         let spreadsheet = getLatestFile('./routes/files/spreadsheet/APP STATUS SPREADSHEET/');
-        parseXLSX(spreadsheet);   
-     } catch (error){
-         console.log("spreadsheet not gotten from VASP");
-     }
+  try {
+    let spreadsheet = getLatestFile('./routes/files/spreadsheet/APP STATUS SPREADSHEET/');
+    parseXLSX(spreadsheet);
+  } catch (error) {
+    console.log("spreadsheet not gotten from VASP");
+  }
 
-    res.json({data: apps.apps});
+  res.json({ data: apps.apps });
 });
 
 
@@ -64,7 +64,7 @@ router.get('/get-apps', (req, res) => {
 async function loginMicrosoftPuppet(isAuth, name) {
   if (isAuth) {
     const downloadPath = path.resolve('./routes/files/spreadsheet/');
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
 
     const client = await page.target().createCDPSession()
@@ -88,7 +88,7 @@ async function loginMicrosoftPuppet(isAuth, name) {
     await page.click('#idSIButton9');
     console.log("Got to email screen");
 
-   await navigationPromise
+    //await navigationPromise
 
     // wait and type
     const passwordBoxSelector = '#i0118';
@@ -97,13 +97,13 @@ async function loginMicrosoftPuppet(isAuth, name) {
     await page.click("#idSIButton9");
     console.log("Got to Password screen");
 
-   // await navigationPromise
+    // await navigationPromise
 
     // click yes button
     const textSelector = await page.waitForSelector('#idSIButton9');
     await page.click("#idSIButton9");
     console.log("Got to Stay Signed in screen");
-    
+
     await navigationPromise;
 
     await page.waitForSelector("button[name='Download']");
@@ -113,26 +113,26 @@ async function loginMicrosoftPuppet(isAuth, name) {
     let strName = name.split(" ");
     strName = strName.join(".");
     console.log(strName);
-    
+
   }
 };
 
-async function processFiles(){
+async function processFiles() {
   setTimeout(() => {
-      // gets the name of the latest file and renames it to VASP.zip
+    // gets the name of the latest file and renames it to VASP.zip
     const latestFile = getLatestFile('./routes/files/spreadsheet/');
 
     fs.renameSync(latestFile, './routes/files/spreadsheet/VASP.zip');
-    console.log('Successfully renamed - AKA moved!') 
+    console.log('Successfully renamed - AKA moved!')
 
     // Now we can unzip the file and extract contents
     var file = new zip('./routes/files/spreadsheet/VASP.zip');
     file.extractAllTo('./routes/files/spreadsheet/', /*overwrite*/ true);
     console.log('Successfully unzipped file')
 
-     // Return the spreadsheet location! (xlsx)
+    // Return the spreadsheet location! (xlsx)
     const spreadsheetFile = getLatestFile('./routes/files/spreadsheet/APP STATUS SPREADSHEET/');
-     
+
     console.log(spreadsheetFile);
 
     parseXLSX(spreadsheetFile);
@@ -140,103 +140,103 @@ async function processFiles(){
 }
 
 
-  async function parseXLSX(spreadsheet) {
-    const parsed = xlsx.parse(fs.readFileSync(spreadsheet));
-    let section = "";
-    let data = parsed[0].data; 
+async function parseXLSX(spreadsheet) {
+  const parsed = xlsx.parse(fs.readFileSync(spreadsheet));
+  let section = "";
+  let data = parsed[0].data;
 
-    // loop through all items in vasp spreadsheet after 13
-    for (var j = 0; j < data.length; j++){
+  // loop through all items in vasp spreadsheet after 13
+  for (var j = 0; j < data.length; j++) {
 
     // flag - true means don't process row, false means process row
     let flag = true;
     let row = data[j];
-    
-        if (section === "completed"){
-                row.unshift("Completed");
-                apps.apps.push(addEmptyColumns(row));
-      } else if (section === "noAssessment"){
-             row.unshift("No Assessment");
-            apps.apps.push(addEmptyColumns(row));
-      } else if (section === "progress"){
-            row.unshift("In Progress");
-            apps.apps.push(addEmptyColumns(row));
-      } else if (section === "pending"){
-            row.unshift("Pending");
-            apps.apps.push(addEmptyColumns(row));
-      }
 
-      // get headers of completed apps and add subsequent rows to completedApps
-      if (row[0] === "Completed Apps:  Software Title"){
-            row.shift();
-            row.unshift("Software Title");
-            row.unshift("Type");
-
-            apps.headers = cleanHeaders(row);
-            section = "completed";
-      } else if (row[1] === "No Assessment Completed:  Software Title") {
-          section = "noAssessment";
-      } else if (row[1] === "Apps in Progress:  Software Title"){
-          section = "progress";
-      } else if (row[1]?.toString().includes("Pending List")){
-          section = "pending";
-      } 
-
+    if (section === "completed") {
+      row.unshift("Completed");
+      apps.apps.push(addEmptyColumns(row));
+    } else if (section === "noAssessment") {
+      row.unshift("No Assessment");
+      apps.apps.push(addEmptyColumns(row));
+    } else if (section === "progress") {
+      row.unshift("In Progress");
+      apps.apps.push(addEmptyColumns(row));
+    } else if (section === "pending") {
+      row.unshift("Pending");
+      apps.apps.push(addEmptyColumns(row));
     }
 
-    console.log("VASP apps have been loaded");
-  }
+    // get headers of completed apps and add subsequent rows to completedApps
+    if (row[0] === "Completed Apps:  Software Title") {
+      row.shift();
+      row.unshift("Software Title");
+      row.unshift("Type");
 
-  function addEmptyColumns(arr){
-    for (var i = 0; i < 12; i++){
-      if (typeof arr[i] === "undefined"){
-        arr[i] = "";
-      }
-      if (i === 6){
-        arr[i] = parseInt((parseFloat(arr[i]) * 100)).toString() + "%";
-      }
+      apps.headers = cleanHeaders(row);
+      section = "completed";
+    } else if (row[1] === "No Assessment Completed:  Software Title") {
+      section = "noAssessment";
+    } else if (row[1] === "Apps in Progress:  Software Title") {
+      section = "progress";
+    } else if (row[1]?.toString().includes("Pending List")) {
+      section = "pending";
     }
-    return arr;
+
   }
 
-  function cleanHeaders(arr){
-    for (var i = 0; i < arr.length; i++){
-        arr[i] = arr[i].replace(/(r\n|\n|\r)/gm, " ");
-        if (arr[i].toString().includes("Platform")){
-            arr[i] = "Platform";
-        }
-        if (arr[i].toString().includes("Language")){
-          arr[i] = "Language(s)";
-        }
-        if (arr[i].toString().includes("Vendor")){
-            arr[i] = "Creator";
-        }
+  console.log("VASP apps have been loaded");
+}
+
+function addEmptyColumns(arr) {
+  for (var i = 0; i < 12; i++) {
+    if (typeof arr[i] === "undefined") {
+      arr[i] = "";
     }
-    return arr;
-  }
-
-
-
-  function getLatestFile(directoryPath) {
-    const files = fs.readdirSync(directoryPath);
-  
-    if (files.length === 0) {
-      console.error('Directory is empty.');
-      return null;
+    if (i === 6) {
+      arr[i] = parseInt((parseFloat(arr[i]) * 100)).toString() + "%";
     }
-  
-    // Get the full paths of the files
-    const filePaths = files.map(file => path.join(directoryPath, file));
-  
-    // Sort the files by modification time in descending order
-    const sortedFiles = filePaths.sort((a, b) => {
-      const statA = fs.statSync(a);
-      const statB = fs.statSync(b);
-      return statB.mtime.getTime() - statA.mtime.getTime();
-    });
-  
-    // Return the path of the latest file
-    return sortedFiles[0];
+  }
+  return arr;
+}
+
+function cleanHeaders(arr) {
+  for (var i = 0; i < arr.length; i++) {
+    arr[i] = arr[i].replace(/(r\n|\n|\r)/gm, " ");
+    if (arr[i].toString().includes("Platform")) {
+      arr[i] = "Platform";
+    }
+    if (arr[i].toString().includes("Language")) {
+      arr[i] = "Language(s)";
+    }
+    if (arr[i].toString().includes("Vendor")) {
+      arr[i] = "Creator";
+    }
+  }
+  return arr;
+}
+
+
+
+function getLatestFile(directoryPath) {
+  const files = fs.readdirSync(directoryPath);
+
+  if (files.length === 0) {
+    console.error('Directory is empty.');
+    return null;
   }
 
-  module.exports = router;
+  // Get the full paths of the files
+  const filePaths = files.map(file => path.join(directoryPath, file));
+
+  // Sort the files by modification time in descending order
+  const sortedFiles = filePaths.sort((a, b) => {
+    const statA = fs.statSync(a);
+    const statB = fs.statSync(b);
+    return statB.mtime.getTime() - statA.mtime.getTime();
+  });
+
+  // Return the path of the latest file
+  return sortedFiles[0];
+}
+
+module.exports = router;
