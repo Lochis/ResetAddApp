@@ -5,7 +5,7 @@ function pushAppObject(formData){
 
 	//if not empty, put appName together with link
 	if (formData.appLink != ""){
-		appName = `<a href='${formData.appLink}'>${formData.appName}</a>`;
+		appName = `<a target="_blank" href='${formData.appLink}'>${formData.appName}</a>`;
 	} else {
 		appName = formData.appName;
 	}
@@ -16,9 +16,9 @@ function pushAppObject(formData){
     
     if(formData.VASPLink != ""){
         if (formData.VASPReport === 'Report'){
-            VASPReport += `<a href='${formData.VASPLink}'>Report</a>`;
+            VASPReport += `<a target="_blank" href='${formData.VASPLink}'>Report</a>`;
         } else if (formData.VASPReport === 'NOSPIC') {
-            VASPReport += `<a href='${formData.VASPLink}'>Report</a> No Student Information Collected`;
+            VASPReport += `<a target="_blank" href='${formData.VASPLink}'>Report</a> No Student Information Collected`;
         } else if (formData.VASPReport === 'Default') {
             VASPReport = formData.VASPReport;                   // going to error out/ not pass through anyways, so redefined
         }
