@@ -3,17 +3,17 @@
  * Licensed under the MIT License.
  */
 
-var express = require('express');
+import express from 'express';
 var router = express.Router();
 
 
 router.get('/', function (req, res, next) {
-    res.render('index', {
-        title: 'AMDSB Application Approvals',
-        page: false,
-        isAuthenticated: req.session.isAuthenticated,
-        name: req.session.account?.name,
-    });
+  res.render('index', {
+    title: 'AMDSB Application Approvals',
+    page: false,
+    isAuthenticated: req.session.isAuthenticated,
+    name: req.session.account?.name,
+  });
 });
 
 module.exports = router;
